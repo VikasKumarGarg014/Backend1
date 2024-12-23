@@ -30,8 +30,8 @@
 const express = require("express")
 const app = express();
 const morgan = require('morgan');
-
-
+const userModel = require('./modules/user');
+const dbConnection = require('./config/db');
 app.use(morgan('dev')); // this is a third party middleware
 app.set('view engine', 'ejs');
 app.use(express.static("public"))
@@ -42,6 +42,44 @@ app.use((req, res, next) => {
     console.log("This is middleware");
     const a = 10;
     return next();
+})
+
+app.get('/register', (req, res) => {
+    res.render('register');  
+})
+app.post('/register', async (req, res) => {
+    // console.log(req.body);
+
+    const { username, password, email } = req.body;
+    const newUser = await userModel.create({
+        username: username,
+        password: password,
+        email: email
+    });
+    res.send(newUser);
+})
+
+app.get('/get-user', async (req, res) => { 
+    userModel.find(
+        // {username:'b'}
+    ).then((users) => {
+            res.send(users);
+        })
+});
+
+app.get("/update-user", async(req, res) => {
+    await userModel.findOneAndUpdate({
+        username: 'a',
+    },
+    {
+        password: 'b@example.com'
+        })
+    res.send("success");
+})
+app.get("/delete-user", async(req, res) => {
+    await userModel.findOneAndDelete({
+        username: 'a',
+    }),    res.send("sdwe");
 })
 
 app.get("/", (req, res) => {
